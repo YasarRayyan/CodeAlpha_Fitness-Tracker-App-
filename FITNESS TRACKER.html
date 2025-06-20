@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fitness Tracker App</title>
+<style>
+  /* Import Google Fonts */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+  /* Material Icons CDN */
+  @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+  /* Reset and base */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  html {
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    background: #f9fafb;
+    color: #1f2937;
+    scroll-padding-top: 70px;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Layout breakpoints */
+  :root {
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 32px;
+    --spacing-xl: 48px;
+    --max-width-large: 1440px;
+  }
+
+  /* Container max width with padding */
+  .container {
+    width: 100%;
+    max-width: var(--max-width-large);
+    margin: 0 auto;
+    padding: 0 var(--spacing-sm);
+  }
+
+  /* Header styling */
+  header {
+    position: sticky;
+    top: 0;
+    background: #111827; /* dark-gray-blue */
+    color: white;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    max-width: var(--max-width-large);
+    margin: 0 auto;
+    padding-left: var(--spacing-sm);
+    padding-right: var(--spacing-sm);
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 0.05em;
+  }
+  
+  /* Hamburger for mobile */
+  .hamburger {
+    cursor: pointer;
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 28px;
+    height: 22px;
+  }
+  .hamburger span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background: white;
+    border-radius: 3px;
+  }
+
+  /* Navigation styles */
+  nav {
+    display: flex;
+    gap: var(--spacing-lg);
+  }
+  nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+  }
+  nav a:hover,
+  nav a:focus {
+    background-color: #374151; /* dark gray */
+    outline: none;
+  }
+
+  /* Mobile nav overlay */
+  .mobile-nav {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: var(--spacing-xl);
+    gap: var(--spacing-lg);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1500;
+  }
+  .mobile-nav.active {
+    transform: translateX(0);
+  }
+  .mobile-nav a {
+    font-size: 1.25rem;
+    color: white;
+  }
+  .mobile-nav button.close-mobile-nav {
+    background: none;
+    border: none;
+    align-self: flex-end;
+    font-size: 2rem;
+    color: white;
+    cursor: pointer;
+  }
+
+  /* Main content */
+  main {
+    flex: 1;
+    padding: var(--spacing-lg) 0;
+  }
+
+  /* Layout grid for desktop */
+  .dashboard-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--spacing-lg);
+  }
+
+  /* Left, center, right panels */
+  .sidebar,
+  .summary,
+  .data-logger {
+    background: white;
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  .sidebar h2 {
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.2rem;
+  }
+  .sidebar img {
+    width: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+  .activities-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+  .activity-item {
+    display: flex;
+    justify-content: space-between;
+    background: #f3f4f6;
+    padding: var(--spacing-xs);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* Summary */
+  .summary {
+    flex: 2 1 500px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  .summary h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .summary .progress-bars {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .progress-bar {
+    background: #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 26px;
+    display: flex;
+    align-items: center;
+  }
+  .progress-bar > div {
+    height: 100%;
+    color: white;
+    font-weight: 700;
+    text-align: right;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+  }
+  .steps-bar {
+    background: linear-gradient(90deg, #4ade80, #16a34a);
+  }
+  .workout-bar {
+    background: linear-gradient(90deg, #60a5fa, #2563eb);
+  }
+  .calories-bar {
+    background: linear-gradient(90deg, #f87171, #dc2626);
+  }
+
+  /* Data Logger Form */
+  .data-logger {
+    flex: 1 1 320px;
+  }
+  .data-logger h2 {
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-bottom: var(--spacing-md);
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  label {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  input[type="number"],
+  select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #d1d5db;
+    font-size: 1rem;
+    outline-offset: 2px;
+    outline-color: transparent;
+    transition: outline-color 0.15s ease-in-out;
+  }
+  input[type="number"]:focus,
+  select:focus {
+    outline-color: #3b82f6;
+  }
+  button[type="submit"] {
+    background: #3b82f6;
+    color: white;
+    font-weight: 700;
+    padding: 12px;
+    font-size: 1rem;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  button[type="submit"]:hover,
+  button[type="submit"]:focus {
+    background: #2563eb;
+  }
+
+  /* Table for history logs */
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-md);
+  }
+  .history-table thead {
+    background: #374151;
+    color: white;
+  }
+  .history-table th,
+  .history-table td {
+    text-align: center;
+    padding: 12px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.9rem;
+  }
+  .history-table tbody tr:hover {
+    background: #f3f4f6;
+  }
+
+  /* Footer */
+  footer {
+    background: #111827;
+    color: white;
+    padding: var(--spacing-md) var(--spacing-sm);
+    text-align: center;
+    font-size: 0.875rem;
+  }
+
+  /* Responsive Design */
+
+  /* Mobile (320px - 767px) */
+  @media (max-width: 767px) {
+    .header-inner nav {
+      display: none;
+    }
+    .dashboard-grid {
+      flex-direction: column;
+      padding: 0 var(--spacing-sm);
+    }
+    .sidebar, .summary, .data-logger {
+      flex: none;
+      width: 100%;
+      margin-bottom: var(--spacing-lg);
+    }
+    header {
+      padding-left: var(--spacing-sm);
+      padding-right: var(--spacing-sm);
+    }
+  }
+
+  /* Desktop (768px - 1439px) */
+  @media (min-width: 768px) and (max-width: 1439px) {
+    .header-inner nav {
+      display: flex;
+    }
+    .hamburger {
+      display: none;
+    }
+  }
+
+  /* Large Desktop (1440px and up) */
+  @media (min-width: 1440px) {
+    .container {
+      padding: 0 var(--spacing-lg);
+    }
+  }
+
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner container" role="banner">
+    <a href="#" class="logo" aria-label="Fitness Tracker App Logo">FitTrack</a>
+
+    <nav role="navigation" aria-label="Primary navigation">
+      <a href="#summary" tabindex="0">Summary</a>
+      <a href="#data-entry" tabindex="0">Log Activity</a>
+      <a href="#history" tabindex="0">History</a>
+    </nav>
+
+    <button class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" id="hamburger-btn">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <nav class="mobile-nav" id="mobile-menu" aria-label="Mobile navigation" aria-hidden="true">
+    <button class="close-mobile-nav" aria-label="Close menu" id="mobile-menu-close">&times;</button>
+    <a href="#summary" tabindex="0" class="mobile-link">Summary</a>
+    <a href="#data-entry" tabindex="0" class="mobile-link">Log Activity</a>
+    <a href="#history" tabindex="0" class="mobile-link">History</a>
+  </nav>
+</header>
+
+<main class="container" id="main-content">
+  <div class="dashboard-grid" role="main">
+    <aside class="sidebar" aria-label="Fitness tracker goals and highlights">
+      <h2>Today's Goals</h2>
+      <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/72d3ed74-352b-4a2c-ac8d-78171f2c9db7.png" alt="Motivational fitness image with person running outdoors in sunlight" />
+      <ul class="activities-list" aria-live="polite" aria-relevant="additions">
+        <li class="activity-item"><span>Steps</span><span id="goal-steps">10000</span></li>
+        <li class="activity-item"><span>Workout (min)</span><span id="goal-workout">60</span></li>
+        <li class="activity-item"><span>Calories Burned</span><span id="goal-calories">500</span></li>
+      </ul>
+    </aside>
+
+    <section class="summary" id="summary" tabindex="0" aria-label="Dashboard summary">
+      <h2>Today's Progress</h2>
+      <div class="progress-bars" role="region" aria-live="polite" aria-atomic="true" aria-relevant="text">
+        <div>
+          <label for="steps-progress">Steps</label>
+          <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="steps-progress" aria-label="Steps progress bar">
+            <div class="steps-bar" style="width: 0%;">0%</div>
+          </div>
+        </div>
+        <div>
+          <label for="workout-progress">Workout Minutes</label>
+          <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="workout-progress" aria-label="Workout minutes progress bar">
+            <div class="workout-bar" style="width: 0%;">0%</div>
+          </div>
+        </div>
+        <div>
+          <label for="calories-progress">Calories Burned</label>
+          <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="calories-progress" aria-label="Calories burned progress bar">
+            <div class="calories-bar" style="width: 0%;">0%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="data-logger" id="data-entry" aria-label="Log fitness activity">
+      <h2>Log Fitness Activity</h2>
+      <form id="activity-form" aria-describedby="form-desc">
+        <p id="form-desc" style="margin:0 0 var(--spacing-md) 0; font-size: 0.9rem; color: #555;">Enter your workout time, exercise type, and calories burned.</p>
+        <label for="exercise-type">Exercise Type</label>
+        <select id="exercise-type" name="exercise-type" aria-required="true" required>
+          <option value="" disabled selected>Select exercise</option>
+          <option value="steps">Steps</option>
+          <option value="workout">Workout (min)</option>
+          <option value="calories">Calories Burned</option>
+        </select>
+        <label for="time">Duration (minutes) / Quantity</label>
+        <input type="number" id="time" name="time" min="1" step="1" aria-required="true" required placeholder="e.g. 30 or 5000 steps" />
+        <button type="submit" aria-label="Add fitness data">Add Activity</button>
+      </form>
+      <section aria-live="polite" aria-atomic="true" id="form-feedback" style="font-weight:600; margin-top: 12px; min-height: 24px;"></section>
+      <h3 id="history" style="margin-top: var(--spacing-lg); font-weight: 700;">Activity History</h3>
+      <table class="history-table" aria-describedby="history-desc">
+        <caption id="history-desc" class="sr-only">List of logged fitness activities</caption>
+        <thead>
+          <tr>
+            <th scope="col">Date/Time</th>
+            <th scope="col">Exercise Type</th>
+            <th scope="col">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="activity-history">
+          <!-- Activity Items added dynamically here -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+</main>
+
+<footer>
+  &copy; 2024 FitTrack. All rights reserved.
+</footer>
+
+<script>
+  'use strict';
+
+  // Elements
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const mobileNav = document.getElementById('mobile-menu');
+  const mobileNavClose = document.getElementById('mobile-menu-close');
+  const navLinks = mobileNav.querySelectorAll('a.mobile-link');
+  const activityForm = document.getElementById('activity-form');
+  const activityHistoryTbody = document.getElementById('activity-history');
+  const formFeedback = document.getElementById('form-feedback');
+
+  const goalSteps = document.getElementById('goal-steps');
+  const goalWorkout = document.getElementById('goal-workout');
+  const goalCalories = document.getElementById('goal-calories');
+
+  const stepsProgress = document.getElementById('steps-progress').querySelector('div');
+  const workoutProgress = document.getElementById('workout-progress').querySelector('div');
+  const caloriesProgress = document.getElementById('calories-progress').querySelector('div');
+
+  // Constants for goals
+  const TARGET_STEPS = 10000;
+  const TARGET_WORKOUT = 60; // minutes
+  const TARGET_CALORIES = 500;
+
+  // Store fitness data in local storage key
+  const STORAGE_KEY = 'fittrack-activities';
+
+  // Current totals - start with 0 or from previous data
+  let totals = { steps: 0, workout: 0, calories: 0 };
+
+  // Initialize UI and data from localStorage
+  function loadData() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        if (Array.isArray(data)) {
+          // Compute totals from entries
+          totals = data.reduce((acc, entry) => {
+            if (entry.type === 'steps') acc.steps += entry.amount;
+            else if (entry.type === 'workout') acc.workout += entry.amount;
+            else if (entry.type === 'calories') acc.calories += entry.amount;
+            return acc;
+          }, { steps: 0, workout: 0, calories: 0 });
+
+          updateProgressBars();
+          renderHistory(data);
+        }
+      } catch(e) {
+        console.warn('Failed to parse fitness data from storage', e);
+      }
+    } else {
+      // No data: initialize UI
+      updateProgressBars();
+    }
+  }
+
+  // Save new activity to local storage
+  function saveActivity(activity) {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    let data = [];
+    if (stored) {
+      try {
+        data = JSON.parse(stored);
+        if (!Array.isArray(data)) data = [];
+      } catch {
+        data = [];
+      }
+    }
+    data.push(activity);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    renderHistory(data);
+    // Update totals & progress bars
+    if (activity.type === 'steps') totals.steps += activity.amount;
+    else if (activity.type === 'workout') totals.workout += activity.amount;
+    else if (activity.type === 'calories') totals.calories += activity.amount;
+    updateProgressBars();
+  }
+
+  // Render the activity history table
+  function renderHistory(data) {
+    activityHistoryTbody.innerHTML = '';
+    if (!data.length) {
+      const noDataRow = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 3;
+      td.textContent = 'No fitness activities logged yet.';
+      td.style.fontStyle = 'italic';
+      noDataRow.appendChild(td);
+      activityHistoryTbody.appendChild(noDataRow);
+      return;
+    }
+    // Sort descending by datetime
+    const sorted = [...data].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    for (const entry of sorted) {
+      const tr = document.createElement('tr');
+      const dateTd = document.createElement('td');
+      const typeTd = document.createElement('td');
+      const amountTd = document.createElement('td');
+
+      const dt = new Date(entry.timestamp);
+      dateTd.textContent = dt.toLocaleString();
+      typeTd.textContent = formatTypeLabel(entry.type);
+      amountTd.textContent = formatAmount(entry.type, entry.amount);
+
+      tr.appendChild(dateTd);
+      tr.appendChild(typeTd);
+      tr.appendChild(amountTd);
+      activityHistoryTbody.appendChild(tr);
+    }
+  }
+
+  // Format label for exercise type
+  function formatTypeLabel(type) {
+    if (type === 'steps') return 'Steps';
+    if (type === 'workout') return 'Workout (min)';
+    if (type === 'calories') return 'Calories Burned';
+    return type;
+  }
+
+  // Format amount display with units
+  function formatAmount(type, amount) {
+    if (type === 'steps') return amount.toLocaleString() + ' steps';
+    if (type === 'workout') return amount + ' min';
+    if (type === 'calories') return amount + ' kcal';
+    return amount;
+  }
+
+  // Update the progress bars based on totals and goals
+  function updateProgressBars() {
+    updateSingleProgress(stepsProgress, totals.steps, TARGET_STEPS);
+    updateSingleProgress(workoutProgress, totals.workout, TARGET_WORKOUT);
+    updateSingleProgress(caloriesProgress, totals.calories, TARGET_CALORIES);
+  }
+
+  // Update a single bar's width & text with ARIA attributes
+  function updateSingleProgress(barDiv, current, target) {
+    const percentage = Math.min(100, Math.round((current / target) * 100));
+    barDiv.style.width = percentage + '%';
+    barDiv.textContent = percentage + '%';
+    const progressbar = barDiv.parentNode;
+    if (progressbar) {
+      progressbar.setAttribute('aria-valuenow', percentage);
+      progressbar.setAttribute('aria-valuetext', `${percentage}%`);
+    }
+  }
+
+  // Form submit handler
+  activityForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    formFeedback.textContent = '';
+    const type = activityForm['exercise-type'].value;
+    const timeStr = activityForm['time'].value.trim();
+    const amount = parseInt(timeStr, 10);
+
+    if (!type) {
+      formFeedback.textContent = 'Please select an exercise type.';
+      return;
+    }
+    if (!timeStr || isNaN(amount) || amount < 1) {
+      formFeedback.textContent = 'Please enter a valid positive number for duration or quantity.';
+      return;
+    }
+
+    // Build activity entry
+    const activityEntry = {
+      type,
+      amount,
+      timestamp: new Date().toISOString(),
+    };
+
+    saveActivity(activityEntry);
+    formFeedback.textContent = 'Activity added successfully!';
+
+    // Clear form inputs & reset
+    activityForm.reset();
+    activityForm['exercise-type'].focus();
+  });
+
+  // Mobile menu toggle
+  hamburgerBtn.addEventListener('click', () => {
+    const expanded = hamburgerBtn.getAttribute('aria-expanded') === 'true';
+    hamburgerBtn.setAttribute('aria-expanded', String(!expanded));
+    mobileNav.setAttribute('aria-hidden', String(expanded));
+    mobileNav.classList.toggle('active');
+  });
+
+  // Mobile nav close button
+  mobileNavClose.addEventListener('click', () => {
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+    mobileNav.setAttribute('aria-hidden', 'true');
+    mobileNav.classList.remove('active');
+    hamburgerBtn.focus();
+  });
+
+  // Close mobile nav on nav link click for accessibility
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      hamburgerBtn.setAttribute('aria-expanded', 'false');
+      mobileNav.setAttribute('aria-hidden', 'true');
+      mobileNav.classList.remove('active');
+      hamburgerBtn.focus();
+    });
+  });
+
+  // Init
+  loadData();
+</script>
+</body>
+</html>
+
